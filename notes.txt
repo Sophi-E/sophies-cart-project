@@ -1,0 +1,23 @@
+So the app controlling this will have a state, and that state will contain two objects: the `store` and the `cart`. 
+
+The store will contain various products, likely more than the cart. Each item in the store will contain some stuff:
+
+interface StoreItem {
+  id: number;
+  title: string;
+  price: string;
+  category: string;
+  description: string;
+  image: string;
+}
+
+And the cart will contain a number of items, but a truncated set:
+
+interface CartItem {
+  id: number;
+  quantity: number;
+}
+
+When the item is added to the cart, the StoreItem id is added to the array of CartItems with a quantity of one, and the cart is updated, displaying the CartItem with the integrated StoreItem (or the StoreItem with cart quantity). The quantity should be (I think) a useReducer (either in the Cart component or in the App? I don't know).
+
+I *think* the app will maintain both the store and the cart, and will provide the cart using the context API. The Cart component will consume it via the context, and will update it as appropriate, updating the top-level thing at the same time. The app might also have a useEffect hook, so that any time the cart is updated, the localStorage is updated too. I think.
