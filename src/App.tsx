@@ -6,6 +6,16 @@ import CartListing from './components/cart-listing';
 
 import './tailwind.output.css';
 
+interface AppProps {
+
+}
+
+interface AppState {
+  store: any, 
+  cart:any, 
+  modalOpen:boolean
+}
+
 interface CartItem {
   onQuantityChange: any;
   id: number;
@@ -20,20 +30,12 @@ interface CartItem {
 
 Modal.setAppElement("#root");
 
-class App extends Component<{},{store: any, cart:any, modalOpen:boolean}> {
+class App extends Component<AppProps, AppState> {
   constructor(props:any){
     super(props)
     this.state = {
       "store": [],
-      "cart": [
-        {
-          id: 1,
-          quantity: 1,
-        },{
-          id: 13,
-          quantity: 3,
-        },
-      ],
+      "cart": [],
       "modalOpen":false
     }
     this.handleItemQuantityChange = this.handleItemQuantityChange.bind(this);
@@ -96,9 +98,35 @@ class App extends Component<{},{store: any, cart:any, modalOpen:boolean}> {
   }
 
   componentDidMount(){
+    let cartStr = localStorage.getItem("cart");
+
+    const cart = cartStr !== null ? JSON.parse(cartStr) : []
+    console.log(cart);
+
+    this.setState((prevState:AppState)=>({...prevState, cart }) );
+
     fetch('https://fakestoreapi.com/products')
         .then(res=>res.json())
         .then(json=>this.setState(prevState=>({...prevState, store: [...json]})))
+  }
+
+  componentDidUpdate(prevProps:AppProps, prevState:AppState){
+    /***
+     * I don't really care if props has changes, but state matters
+     *  here. I want to check if the cart array has changed, and it has,
+     *  I want to update the localStorage. I *think* this is the sanest 
+     *  way...
+     ***/
+    console.log(this.state.cart);
+    let isCartChanged = prevState.cart.length !== this.state.cart.length ? true :
+                        this.state.cart.filter((item1:any)=> !prevState.cart.some((item2:any)=>
+                          item1.id===item2.id && item1.quantity===item2.quantity
+                        ) ).length!==0 ? true : false;
+  
+
+    if(isCartChanged){
+      localStorage.setItem("cart", JSON.stringify(this.state.cart) )
+    }
 
   }
 
