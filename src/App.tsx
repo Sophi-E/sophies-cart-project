@@ -3,6 +3,7 @@ import Modal from 'react-modal';
 
 import StoreListing from './components/store-listing';
 import CartListing from './components/cart-listing';
+import CartSummary from './components/cart-summary';
 
 import './tailwind.output.css';
 
@@ -136,7 +137,7 @@ class App extends Component<AppProps, AppState> {
         <header className="flex space-between">
           <h1 className="w-1/2 text-4xl font-black text-indigo-600">Shop O Stuff</h1>
           <a href="#" onClick={this.toggleModal}>
-            <span className='w-1/4 text-md text-indigo-300'>Your cart contains {this.state.cart.length} items.</span>
+            <CartSummary store={this.state.store.map((item:any)=>({id:item.id, price: item.price}))} cart={this.state.cart} />
           </a>
         </header>
 
