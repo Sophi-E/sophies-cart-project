@@ -4,9 +4,8 @@ interface handlerFunction {
   (): void
 }
 interface QuantityProps {
+  onChangeQuantity: any;
   id: number;
-  onChangeQuantity: handlerFunction;
-
   quantity: number;
 }
 

@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
+import Modal from 'react-modal';
 
 import StoreListing from './components/store-listing';
-import LineItem from './components/line-item';
+import CartListing from './components/cart-listing';
+
 import './tailwind.output.css';
 
 interface CartItem {
@@ -16,7 +18,9 @@ interface CartItem {
   taxable?: boolean;  
 };
 
-class App extends Component<{},{store: any, cart:any}> {
+Modal.setAppElement("#root");
+
+class App extends Component<{},{store: any, cart:any, modalOpen:boolean}> {
   constructor(props:any){
     super(props)
     this.state = {
@@ -29,12 +33,14 @@ class App extends Component<{},{store: any, cart:any}> {
           id: 13,
           quantity: 3,
         },
-      ]
+      ],
+      "modalOpen":false
     }
     this.handleItemQuantityChange = this.handleItemQuantityChange.bind(this);
     this.handleAddItem = this.handleAddItem.bind(this);
     this.handleRemoveItem = this.handleRemoveItem.bind(this);
     this.handleEmptyCart = this.handleEmptyCart.bind(this);
+    this.toggleModal = this.toggleModal.bind(this);
   }
 
   handleItemQuantityChange(event:any){
@@ -54,11 +60,18 @@ class App extends Component<{},{store: any, cart:any}> {
   handleAddItem(event:any){
     const clickedEl = event.target;
     const id = Number(clickedEl.dataset.id);
-
-    this.setState(prevState=>({
-      ...prevState,
-      cart: [...prevState.cart, {id, quantity: 1}]
-    }))
+    let cart;
+    this.setState(prevState=>{
+      if(prevState.cart.find((item:any)=>item.id===id)){
+        cart = prevState.cart.map((cartItem:any)=>cartItem.id===id?{...cartItem, quantity: cartItem.quantity+1}:cartItem)
+      } else {
+        cart = [...prevState.cart, {id, quantity:1}]
+      }
+      return {
+        ...prevState,
+        cart
+      }
+    })
   }
 
   handleRemoveItem(event:any){
@@ -78,6 +91,10 @@ class App extends Component<{},{store: any, cart:any}> {
     }))
   }
 
+  toggleModal(){
+    this.setState((prevState:any)=>({...prevState, modalOpen:!prevState.modalOpen}) )
+  }
+
   componentDidMount(){
     fetch('https://fakestoreapi.com/products')
         .then(res=>res.json())
@@ -90,10 +107,21 @@ class App extends Component<{},{store: any, cart:any}> {
       <>
         <header className="flex space-between">
           <h1 className="w-1/2 text-4xl font-black text-indigo-600">Shop O Stuff</h1>
-          <span className='w-1/4 text-md text-indigo-300'>Your cart contains {this.state.cart.length} items.</span>
+          <a href="#" onClick={this.toggleModal}>
+            <span className='w-1/4 text-md text-indigo-300'>Your cart contains {this.state.cart.length} items.</span>
+          </a>
         </header>
 
         <StoreListing onAddToCart={this.handleAddItem} items={this.state.store} />
+
+        <Modal isOpen={this.state.modalOpen}
+               onRequestClose={this.toggleModal}
+               contentLabel="My cart"
+               >
+          <div>My cart!</div>
+          <CartListing store={this.state.store} cart={this.state.cart} onChangeQuantity={this.handleItemQuantityChange} onRemoveItem={this.handleRemoveItem} />
+          <a href="#" onClick={this.toggleModal}>Close cart</a>
+        </Modal>
       </>
 
     );
